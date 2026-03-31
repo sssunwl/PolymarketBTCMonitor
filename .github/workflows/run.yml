@@ -2,7 +2,7 @@ name: Run Tracker
 
 on:
   schedule:
-    - cron: "* * * * *"   # 每分鐘執行一次
+    - cron: "* * * * *"
   workflow_dispatch:
 
 env:
@@ -25,26 +25,24 @@ jobs:
 
       # 安裝套件
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install pandas
 
-      # 執行抓資料
+      # 執行 tracker
       - name: Run tracker
         run: python tracker.py
 
-      # 執行分析（含36局統計）
+      # 執行 analyze
       - name: Run analyze
         run: python analyze.py
 
-      # 寫回 repo（最穩版本）
-      - name: Commit and push data
+      # Commit
+      - name: Commit and push
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@github.com"
 
           git add .
 
-          # 有變更才 commit（避免報錯）
           git diff --cached --quiet || git commit -m "update data"
 
-          # push 失敗也不讓 workflow 爆
           git push || true
