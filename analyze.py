@@ -13,6 +13,8 @@ if df.empty:
 
 # ===== 時間處理 =====
 df["time"] = pd.to_datetime(df["time"])
+
+# 每5分鐘分組
 df["round"] = (df["time"].astype(int) // 10**9 // 300) * 300
 
 results = []
@@ -35,4 +37,4 @@ for r, group in df.groupby("round"):
 result_df = pd.DataFrame(results)
 result_df.to_csv("rounds.csv", index=False)
 
-print("分析完成")
+print("analyze done")
