@@ -1,33 +1,22 @@
 import time
-import pandas as pd
 from datetime import datetime
+import csv
 import os
 
 FILE = "data.csv"
 
-# ===== 每5分鐘一局 =====
-def get_round():
-    now = int(time.time())
-    return (now // 300) * 300
+now = int(time.time())
+round_id = (now // 300) * 300
 
-# ===== 對應 URL =====
-def get_url(round_id):
-    return f"https://polymarket.com/event/btc-updown-5m-{round_id}"
+row = [str(datetime.utcnow()), round_id]
 
-round_id = get_round()
-url = get_url(round_id)
+# 寫入 CSV（最穩方式，不用 pandas）
+file_exists = os.path.isfile(FILE)
 
-row = {
-    "time": datetime.utcnow(),
-    "round": round_id,
-    "url": url
-}
-
-df = pd.DataFrame([row])
-
-if os.path.exists(FILE):
-    df.to_csv(FILE, mode='a', header=False, index=False)
-else:
-    df.to_csv(FILE, index=False)
+with open(FILE, "a", newline="") as f:
+    writer = csv.writer(f)
+    if not file_exists:
+        writer.writerow(["time", "round"])
+    writer.writerow(row)
 
 print("saved:", row)
