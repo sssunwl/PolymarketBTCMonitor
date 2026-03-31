@@ -2,7 +2,7 @@ name: Run Tracker
 
 on:
   schedule:
-    - cron: "* * * * *"   # 每分鐘執行
+    - cron: "* * * * *"
   workflow_dispatch:
 
 env:
@@ -13,31 +13,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 取得程式碼
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Python 環境
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      # 執行 tracker
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium
+
       - name: Run tracker
         run: python tracker.py
 
-      # Commit（只處理變更）
+      - name: Run price tracker
+        run: python price_tracker.py
+
       - name: Commit
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@github.com"
 
-          git add data.csv || true
-          git commit -m "update data" || true
+          git add . || true
+          git commit -m "update" || true
 
-      # Push（避免卡住 & 衝突）
-      - name: Push (safe)
+      - name: Push
         run: |
           git pull --rebase || true
           git push || true
