@@ -8,30 +8,38 @@ FILE = "data.csv"
 def fetch():
     try:
         res = requests.get("https://clob.polymarket.com/markets")
-        data = res.json()[0]
+        data = res.json()
 
-        up = float(data["outcomes"][0]["price"])
-        down = float(data["outcomes"][1]["price"])
+        if not data or len(data) == 0:
+            return None, None
 
-        return up, down
+        # 👉 找第一個有價格的市場（避免空資料）
+        for m in data:
+            try:
+                up = float(m["outcomes"][0]["price"])
+                down = float(m["outcomes"][1]["price"])
+                return up, down
+            except:
+                continue
+
+        return None, None
+
     except Exception as e:
         print("fetch error:", e)
         return None, None
 
 up, down = fetch()
 
-if up is None or down is None:
-    print("no data")
-    exit()
-
+# 👉 就算抓不到，也寫一筆（關鍵）
 row = {
     "time": datetime.utcnow(),
-    "up": up,
-    "down": down
+    "up": up if up is not None else -1,
+    "down": down if down is not None else -1
 }
 
 df = pd.DataFrame([row])
 
+# 👉 強制寫入
 if os.path.exists(FILE):
     df.to_csv(FILE, mode='a', header=False, index=False)
 else:
