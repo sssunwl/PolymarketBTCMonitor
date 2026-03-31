@@ -14,10 +14,11 @@ for t in texts:
 
 print("RAW:", values)
 
-# 👉 找最接近互補的一組（核心）
+# 👉 安全初始化
 best_pair = None
 best_diff = 999
 
+# 👉 找最接近 1 的兩個值
 for i in range(len(values)):
     for j in range(i + 1, len(values)):
         s = values[i] + values[j]
@@ -27,5 +28,8 @@ for i in range(len(values)):
             best_diff = diff
             best_pair = (values[i], values[j])
 
-if best_pair:
+# 👉 防止 crash（關鍵）
+if best_pair is not None:
     up_price, down_price = best_pair
+else:
+    print("No valid pair found")
