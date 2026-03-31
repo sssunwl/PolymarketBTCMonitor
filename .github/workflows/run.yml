@@ -30,6 +30,9 @@ jobs:
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@github.com"
-          git add data.csv rounds.csv
-          git commit -m "update data" || echo "no change"
-          git push
+
+          git add data.csv rounds.csv || true
+
+          git diff --cached --quiet || git commit -m "update data"
+
+          git push || true
