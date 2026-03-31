@@ -1,51 +1,26 @@
-import requests
+import time
 import pandas as pd
 from datetime import datetime
 import os
 
 FILE = "data.csv"
 
-def fetch():
-    try:
-        res = requests.get("https://clob.polymarket.com/markets")
-        data = res.json()
+# ===== 算當前 round（5分鐘）=====
+def get_round():
+    now = int(time.time())
+    return (now // 300) * 300
 
-        # 👉 找 BTC 5m 市場
-        btc_markets = [
-            m for m in data
-            if "btc" in m.get("question", "").lower()
-            and "5m" in m.get("question", "").lower()
-        ]
+# ===== 組 URL =====
+def get_url(round_id):
+    return f"https://polymarket.com/event/btc-updown-5m-{round_id}"
 
-        if not btc_markets:
-            return None, None, None
-
-        # 👉 找最新（用 timestamp 最大）
-        latest = sorted(
-            btc_markets,
-            key=lambda x: x.get("endDate", ""),
-            reverse=True
-        )[0]
-
-        up = float(latest["outcomes"][0]["price"])
-        down = float(latest["outcomes"][1]["price"])
-
-        market_id = latest.get("conditionId")
-
-        return up, down, market_id
-
-    except Exception as e:
-        print("fetch error:", e)
-        return None, None, None
-
-
-up, down, market_id = fetch()
+round_id = get_round()
+url = get_url(round_id)
 
 row = {
     "time": datetime.utcnow(),
-    "up": up if up is not None else -1,
-    "down": down if down is not None else -1,
-    "market": market_id
+    "round": round_id,
+    "url": url
 }
 
 df = pd.DataFrame([row])
