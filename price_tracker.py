@@ -18,15 +18,11 @@ url = get_url(round_id)
 up_price = -1
 down_price = -1
 
-# ===== 閾值判斷 =====
-up_10 = 0
-down_10 = 0
-up_30 = 0
-down_30 = 0
-up_80 = 0
-down_80 = 0
-up_95 = 0
-down_95 = 0
+# ===== 閾值 =====
+up_10 = down_10 = 0
+up_30 = down_30 = 0
+up_80 = down_80 = 0
+up_95 = down_95 = 0
 
 try:
     from playwright.sync_api import sync_playwright
@@ -36,11 +32,14 @@ try:
         page = browser.new_page()
 
         page.goto(url, timeout=60000)
-        page.wait_for_timeout(8000)
 
-        # ===== 抓右側 Buy 區塊 =====
+        # ===== 🔥 關鍵：等更久 + 模擬互動 =====
+        page.wait_for_timeout(12000)
+        page.mouse.click(1000, 200)   # 觸發 Live
+        page.wait_for_timeout(3000)
+
+        # ===== 抓右側 Buy 區 =====
         panel = page.locator("text=Buy").locator("..")
-
         texts = panel.locator("text=¢").all_inner_texts()
 
         values = []
@@ -65,7 +64,7 @@ try:
 except Exception as e:
     print("ERROR:", e)
 
-# ===== 判斷條件 =====
+# ===== 判斷函數 =====
 def check(val, threshold, mode):
     if val == -1:
         return 0
@@ -74,6 +73,7 @@ def check(val, threshold, mode):
     if mode == "ge":
         return 1 if val >= threshold else 0
 
+# ===== 條件 =====
 up_10 = check(up_price, 0.10, "le")
 down_10 = check(down_price, 0.10, "le")
 
