@@ -1,22 +1,16 @@
 import time
 import pandas as pd
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import os
 
 FILE = "data.csv"
 
-# ===== 轉 ET 時間 =====
-def get_et_timestamp():
-    utc_now = datetime.now(timezone.utc)
-    et_now = utc_now - timedelta(hours=4)  # EST (簡化版，夠用)
-    return int(et_now.timestamp())
-
-# ===== 算 round =====
+# ===== 每5分鐘一局 =====
 def get_round():
-    et_ts = get_et_timestamp()
-    return (et_ts // 300) * 300
+    now = int(time.time())
+    return (now // 300) * 300
 
-# ===== URL =====
+# ===== 對應 URL =====
 def get_url(round_id):
     return f"https://polymarket.com/event/btc-updown-5m-{round_id}"
 
