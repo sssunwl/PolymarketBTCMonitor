@@ -2,28 +2,42 @@ name: Run Tracker
 
 on:
   schedule:
-    - cron: "* * * * *"
+    - cron: "* * * * *"   # 每分鐘執行
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 取得程式碼
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      # Python 環境
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
+      # 執行 tracker
       - name: Run tracker
         run: python tracker.py
 
+      # Commit（只處理變更）
       - name: Commit
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@github.com"
 
           git add data.csv || true
-          git commit -m "update" || true
+          git commit -m "update data" || true
+
+      # Push（避免卡住 & 衝突）
+      - name: Push (safe)
+        run: |
+          git pull --rebase || true
           git push || true
