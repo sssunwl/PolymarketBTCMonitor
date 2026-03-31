@@ -1,0 +1,35 @@
+name: Run Tracker
+
+on:
+  schedule:
+    - cron: "* * * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Run tracker
+        run: python tracker.py
+
+      - name: Run analyze
+        run: python analyze.py
+
+      - name: Commit data
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@github.com"
+          git add data.csv rounds.csv
+          git commit -m "update data" || echo "no change"
+          git push
