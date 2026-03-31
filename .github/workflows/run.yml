@@ -2,7 +2,7 @@ name: Run Tracker
 
 on:
   schedule:
-    - cron: "* * * * *"   # 每分鐘跑一次
+    - cron: "* * * * *"   # 每分鐘執行一次
   workflow_dispatch:
 
 env:
@@ -14,7 +14,8 @@ jobs:
 
     steps:
       # 取得 repo
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       # Python 環境
       - name: Setup Python
@@ -23,25 +24,27 @@ jobs:
           python-version: "3.10"
 
       # 安裝套件
-      - name: Install packages
+      - name: Install dependencies
         run: pip install -r requirements.txt
 
       # 執行抓資料
       - name: Run tracker
         run: python tracker.py
 
-      # 執行分析
+      # 執行分析（含36局統計）
       - name: Run analyze
         run: python analyze.py
 
-      # 寫回 repo（關鍵）
-      - name: Commit data
+      # 寫回 repo（最穩版本）
+      - name: Commit and push data
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@github.com"
 
           git add .
 
+          # 有變更才 commit（避免報錯）
           git diff --cached --quiet || git commit -m "update data"
 
+          # push 失敗也不讓 workflow 爆
           git push || true
